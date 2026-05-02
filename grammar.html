@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>8th Grade Grammar Quiz</title>
+<style>
+:root{
+	--ink:#0f172a;--muted:#475569;--line:#e2e8f0;
+	--accent-start:#7c3aed;--accent-end:#6d28d9;--ok:#16a34a;--bad:#dc2626;--bg:#ffffff;
+	--label-width:170px;
+	--bg-top:#f8fbff;
+	--bg-bottom:#eef6ff;
+}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;min-height:100vh;}
+.wrap{max-width:95%;width:100%;margin:28px auto 80px;padding:0 20px;box-sizing:border-box;}
+@media (min-width:768px){.wrap{max-width:90%;}}
+@media (min-width:1200px){.wrap{max-width:85%;}}
+@media (min-width:1600px){.wrap{max-width:1400px;}}
+.brand{position:sticky;top:0;z-index:102;background:linear-gradient(90deg,var(--accent-start) 0%,var(--accent-end) 100%);color:#fff;padding:14px 18px;margin:0 auto 0;max-width:95%;width:100%;border-radius:0;box-shadow:0 2px 8px rgba(2,20,48,0.12);display:flex;align-items:center;justify-content:space-between;gap:12px;box-sizing:border-box;flex-wrap:wrap;}
+@media (min-width:768px){.brand{max-width:90%;}}
+@media (min-width:1200px){.brand{max-width:85%;}}
+@media (min-width:1600px){.brand{max-width:1400px;}}
+.brand h1{margin:0;font-size:20px;letter-spacing:.2px;font-weight:700}
+.brand-left{display:flex;align-items:center;gap:16px;flex:1;flex-wrap:wrap;}
+.brand-timer{font-weight:700;font-size:16px;opacity:0.95;white-space:nowrap;display:none;}
+#stickyTimer.active{display:inline;}
+.brand-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+#quizControls{display:none;align-items:center;gap:8px;flex-wrap:wrap;}
+#quizControls.show{display:flex!important;}
+#quizControls button{background:rgba(255,255,255,0.2);color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;transition:background 0.2s;white-space:nowrap;}
+#quizControls button:hover{background:rgba(255,255,255,0.3);}
+.nav-btn{background:rgba(255,255,255,0.2);color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;transition:background 0.2s;white-space:nowrap;text-decoration:none;display:inline-block;}
+.nav-btn:hover{background:rgba(255,255,255,0.3);}
+.card{background:var(--card-bg,#ffffff);border:1px solid rgba(2,6,23,0.04);border-radius:14px;box-shadow:0 6px 18px rgba(2,20,48,0.04);margin:18px 0;overflow:hidden;color:var(--card-text,var(--ink))}
+.banner{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:#fff;padding:12px 16px;font-weight:700}
+.quiz-banner{background:#ffffff;color:var(--ink);padding:16px;font-weight:700;border-radius:10px;margin-bottom:16px;font-size:1.1em;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.content{padding:18px}
+.grid-3{display:flex;flex-direction:column;gap:0;}
+.header-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 0;background:#f8fbff;border-bottom:2px solid var(--accent-start);font-weight:700;color:var(--ink);font-size:14px;}
+.header-row > div{padding:6px 4px;}
+.row{display:grid;grid-template-columns:1fr;align-items:start;gap:10px;min-height:auto;padding:12px 0;}
+.row > div{word-break:break-word;padding:6px 4px;font-weight:600;color:var(--muted);font-size:15px}
+input.answer,textarea.answer{
+width:100%;box-sizing:border-box;border:1px solid rgba(2,6,23,0.06);background:#fbfdff;font:inherit;padding:10px 12px;border-radius:10px;
+box-shadow:0 1px 2px rgba(2,6,23,0.03), inset 0 0 0 1px rgba(2,6,23,0.03);transition:box-shadow .15s,background .15s,transform .06s;min-height:40px;
+}
+input.answer.answer-shown,textarea.answer.answer-shown{
+font-style:italic;background:#f0f9ff;cursor:default;
+}
+.ok{background:#ecfdf5!important;box-shadow:inset 0 0 0 2px #16a34a!important;color:#065f46;}
+.bad{background:#fef2f2!important;box-shadow:inset 0 0 0 2px #dc2626!important;color:#7f1d1d;}
+.option-container{display:flex;flex-direction:column;gap:10px;margin:16px 0;}
+.option{padding:12px 16px;border:2px solid rgba(2,6,23,0.1);border-radius:10px;cursor:pointer;transition:all 0.2s;background:#ffffff;color:var(--ink);font-weight:500;user-select:none;}
+.option:hover{border-color:var(--accent-start);background:#f0f9ff;}
+.option.selected{border-color:var(--accent-start);background:#e0f2fe;color:var(--accent-start);}
+.option.correct{border-color:var(--ok);background:#ecfdf5;color:#065f46;}
+.option.incorrect{border-color:var(--bad);background:#fef2f2;color:#7f1d1d;}
+.progress-bar{width:100%;height:8px;background:rgba(2,6,23,0.1);border-radius:10px;overflow:hidden;margin:10px 0;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent-start),var(--accent-end));transition:width 0.3s ease;}
+.button-group{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+button{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:#fff;border:0;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;transition:opacity 0.2s;white-space:nowrap;}
+button:hover:not(:disabled){opacity:0.9;}
+button:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-secondary{background:#e2e8f0;color:var(--ink);}
+.btn-secondary:hover:not(:disabled){opacity:0.8;}
+.hidden{display:none!important;}
+#introModal{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.45);}
+#introModal > div{background:#fff;border-radius:12px;max-width:720px;padding:28px;box-shadow:0 12px 40px rgba(2,20,48,0.18);}
+#introModal h2{margin-top:0;color:#0f172a;font-size:24px;}
+#introModal p{color:#475569;line-height:1.6;margin-bottom:16px;}
+.modal-section{background:#f8fbff;border-left:4px solid #0ea5e9;padding:12px 16px;margin:16px 0;border-radius:6px;}
+.modal-section h3{margin:0 0 8px 0;color:#0284c7;font-size:16px;}
+.modal-section ul{margin:0;padding-left:20px;color:#475569;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
+.score-display{text-align:center;padding:20px;background:#f8fbff;border-radius:10px;margin:16px 0;}
+.score-number{font-size:3.5em;color:var(--accent-start);font-weight:bold;margin:10px 0;}
+.score-label{color:var(--muted);font-size:1.1em;margin-bottom:8px;}
+.score-message{color:var(--ink);margin-top:10px;font-size:1em;}
+.results-list{max-height:500px;overflow-y:auto;margin:16px 0;}
+.result-item{margin-bottom:12px;padding:12px;background:#f8fbff;border-radius:8px;border-left:4px solid var(--line);}
+.result-item.correct{border-left-color:var(--ok);}
+.result-item.incorrect{border-left-color:var(--bad);}
+.result-question{font-weight:700;color:var(--ink);margin-bottom:8px;font-size:15px;}
+.result-answer{font-size:14px;color:var(--muted);margin-bottom:4px;}
+.result-answer strong{color:var(--ink);font-weight:600;}
+.result-status{font-size:14px;font-weight:600;margin-top:8px;}
+.result-status.correct{color:var(--ok);}
+.result-status.incorrect{color:var(--bad);}
+.start-screen{display:none;text-align:center;}
+.start-screen.active{display:block;}
+.start-screen h2{color:#0f172a;margin-bottom:20px;font-size:1.8em;background:#ffffff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-weight:700;}
+.start-screen p{color:var(--muted);margin-bottom:12px;line-height:1.6;}
+.customization{background:#f8fbff;padding:16px;border-radius:8px;margin:20px 0;border-left:4px solid var(--accent-start);}
+.custom-group{margin-bottom:12px;}
+.custom-group label{display:block;font-weight:600;color:var(--ink);margin-bottom:6px;font-size:14px;}
+.custom-group input{width:100%;padding:8px 12px;border:1px solid rgba(2,6,23,0.1);border-radius:6px;font-size:14px;box-sizing:border-box;}
+.quiz-section{display:none;}
+.quiz-section.active{display:block;animation:slideIn 0.3s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.results-section{display:none;}
+.results-section.active{display:block;animation:slideIn 0.3s ease;}
+.question-number{color:var(--accent-start);font-weight:bold;margin-bottom:12px;font-size:14px;}
+.question-text{color:var(--ink);font-size:1.4em;margin-bottom:20px;font-weight:600;line-height:1.7;background:#ffffff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+@media (max-width:768px){
+	.brand h1{font-size:18px;}
+	.brand-timer{font-size:14px;}
+	.score-number{font-size:2.5em;}
+	button{padding:8px 12px;font-size:13px;}
+}
+</style>
+</head>
+<body>
+<div class="brand">
+	<div class="brand-left">
+		<h1 id="brandTitle">8th Grade Grammar Quiz</h1>
+		<span class="brand-timer" id="stickyTimer">Time: <span id="stickyTimerDisplay">00:00</span></span>
+	</div>
+	<div class="brand-right">
+		<div id="quizControls">
+			<button id="finishQuizBtn" onclick="submitQuiz()">Finish Quiz</button>
+			<button id="restartQuizBtn" onclick="restartQuiz()">Restart</button>
+		</div>
+		<a class="nav-btn" href="index.html" title="Home">← Home</a>
+		<a class="nav-btn" href="settings.html" title="Settings">⚙️ Settings</a>
+	</div>
+</div>
+
+<div class="wrap">
+	<!-- Start Screen -->
+	<div class="start-screen active" id="startScreen">
+		<div class="card">
+			<div class="banner">📚 Grammar Quiz Challenge</div>
+			<div class="content">
+				<h2>Test Your Grammar Skills</h2>
+				<p>50 questions covering parts of speech, sentence structure, punctuation, and more!</p>
+
+				<div class="customization">
+					<div class="custom-group">
+						<label for="quizTitle">Quiz Title:</label>
+						<input type="text" id="quizTitle" value="Grammar Quiz" placeholder="Enter quiz title">
+					</div>
+					<div class="custom-group">
+						<label for="bgColor">Accent Color:</label>
+						<input type="color" id="bgColor" value="#7c3aed">
+					</div>
+				</div>
+
+				<div class="button-group">
+					<button onclick="startQuiz(event); return false;" style="flex:1;">Start Quiz</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Quiz Section -->
+	<div id="quizContainer" style="display: none;">
+		<div class="card">
+			<div class="quiz-banner" id="quizBanner">Question <span id="questionNum">1</span> of <span id="totalQuestions">50</span></div>
+			<div class="content">
+				<div class="progress-bar">
+					<div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+				</div>
+
+				<div class="quiz-section active" id="quizSection">
+					<div class="question-number" id="topicDisplay">Topic</div>
+					<div class="question-text" id="questionText">Loading...</div>
+					<div class="option-container" id="optionsContainer"></div>
+
+					<div class="button-group">
+						<button class="btn-secondary" onclick="previousQuestion()" id="prevBtn" disabled>← Previous</button>
+						<button onclick="nextQuestion()" id="nextBtn">Next →</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Results Section -->
+	<div id="resultsSection" style="display: none;">
+		<div class="card">
+			<div class="banner">Quiz Complete!</div>
+			<div class="content">
+				<div class="score-display">
+					<div class="score-label">Your Score</div>
+					<div class="score-number" id="scoreNumber">0/50</div>
+					<div class="score-message" id="scoreMessage"></div>
+				</div>
+
+				<div class="results-list" id="resultsList"></div>
+
+				<div class="button-group">
+					<button onclick="restartQuiz()" style="flex:1;">Take Quiz Again</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	// Load color settings from localStorage
+	function loadColorSettings() {
+		const saved = localStorage.getItem('vocab.theme');
+		const root = document.documentElement;
+
+		if (saved) {
+			try {
+				const settings = JSON.parse(saved);
+				root.style.setProperty('--accent-start', settings['--accent-start']);
+				root.style.setProperty('--accent-end', settings['--accent-end']);
+				root.style.setProperty('--bg-top', settings['--bg-top']);
+				root.style.setProperty('--bg-bottom', settings['--bg-bottom']);
+			} catch (e) {
+				console.error('Failed to load settings:', e);
+			}
+		}
+
+		document.body.style.background = `linear-gradient(180deg,var(--bg-top),var(--bg-bottom))`;
+	}
+
+	// Load settings when page loads
+	loadColorSettings();
+
+	const questions = [
+		// 1. Parts of Speech (3 questions)
+		{
+			question: "Which word is a noun in the sentence: 'The energetic dog quickly ran across the yard'?",
+			options: ["Energetic", "Quickly", "Ran", "Dog"],
+			correct: 3,
+			topic: "Parts of Speech"
+		},
+		{
+			question: "What part of speech is 'incredible' in the sentence: 'She gave an incredible performance'?",
+			options: ["Noun", "Verb", "Adjective", "Adverb"],
+			correct: 2,
+			topic: "Parts of Speech"
+		},
+		{
+			question: "Which word functions as an adverb in this sentence: 'She sang beautifully during the concert'?",
+			options: ["Sang", "Concert", "Beautifully", "During"],
+			correct: 2,
+			topic: "Parts of Speech"
+		},
+
+		// 2. Noun Clauses (2 questions)
+		{
+			question: "Identify the noun clause: 'She believes that the Earth is round.'",
+			options: ["She believes", "that the Earth is", "that the Earth is round", "the Earth is round"],
+			correct: 2,
+			topic: "Noun Clauses"
+		},
+		{
+			question: "What is the function of the noun clause in: 'What you said made me laugh'?",
+			options: ["Object", "Predicate", "Subject", "Complement"],
+			correct: 2,
+			topic: "Noun Clauses"
+		},
+
+		// 3. Verbals (3 questions)
+		{
+			question: "Which word is a gerund in the sentence: 'Running is his favorite sport'?",
+			options: ["Favorite", "Running", "Sport", "Is"],
+			correct: 1,
+			topic: "Verbals"
+		},
+		{
+			question: "What is 'to swim' in the sentence: 'She loves to swim in the ocean'?",
+			options: ["Gerund", "Participle", "Infinitive", "Preposition"],
+			correct: 2,
+			topic: "Verbals"
+		},
+		{
+			question: "Identify the participle in: 'The broken vase sat on the shelf'",
+			options: ["Sat", "Broken", "Shelf", "Vase"],
+			correct: 1,
+			topic: "Verbals"
+		},
+
+		// 4. Advanced Verb Tenses (3 questions)
+		{
+			question: "Which sentence uses the present perfect tense correctly?",
+			options: ["She visits Paris many times", "She has visited Paris many times", "She will visit Paris", "She visiting Paris"],
+			correct: 1,
+			topic: "Verb Tenses"
+		},
+		{
+			question: "What tense is used in: 'They had finished their homework before dinner'?",
+			options: ["Present Perfect", "Past Perfect", "Future Perfect", "Past Progressive"],
+			correct: 1,
+			topic: "Verb Tenses"
+		},
+		{
+			question: "Identify the progressive tense: 'I am reading a book.'",
+			options: ["Present Perfect", "Past Progressive", "Present Progressive", "Future Perfect"],
+			correct: 2,
+			topic: "Verb Tenses"
+		},
+
+		// 5. Adjective and Adverb Phrases (2 questions)
+		{
+			question: "What does the adjective phrase 'with fluffy fur' modify in: 'The cat with fluffy fur sat on the windowsill'?",
+			options: ["Windowsill", "Cat", "Sat", "Fluffy"],
+			correct: 1,
+			topic: "Adjective/Adverb Phrases"
+		},
+		{
+			question: "Identify the adverb phrase in: 'She danced with grace across the stage'",
+			options: ["With grace", "Across the stage", "Both A and B", "Danced"],
+			correct: 2,
+			topic: "Adjective/Adverb Phrases"
+		},
+
+		// 6. Pronoun-Antecedent Agreement (2 questions)
+		{
+			question: "Which sentence has correct pronoun-antecedent agreement?",
+			options: ["Everyone brought their books", "Each student brought his or her book", "The team are playing their best", "All of the above"],
+			correct: 1,
+			topic: "Pronoun Agreement"
+		},
+		{
+			question: "Choose the correct pronoun: 'Each of the boys brought _____ ball.'",
+			options: ["their", "his", "its", "our"],
+			correct: 1,
+			topic: "Pronoun Agreement"
+		},
+
+		// 7. Prepositional Phrases as Modifiers (2 questions)
+		{
+			question: "What is the prepositional phrase functioning as in: 'The house on the corner is painted blue'?",
+			options: ["Adverb", "Adjective", "Noun", "Predicate"],
+			correct: 1,
+			topic: "Prepositional Phrases"
+		},
+		{
+			question: "Identify the prepositional phrase in: 'She ran with great speed'",
+			options: ["She ran", "With great speed", "Great speed", "Ran with"],
+			correct: 1,
+			topic: "Prepositional Phrases"
+		},
+
+		// 8. Complex Sentences (2 questions)
+		{
+			question: "Identify the dependent clause in: 'Although it was late, we kept studying.'",
+			options: ["We kept studying", "Although it was late", "It was late", "We kept"],
+			correct: 1,
+			topic: "Complex Sentences"
+		},
+		{
+			question: "Which word is a subordinating conjunction in: 'After the meeting ends, we can go outside'?",
+			options: ["We", "Can", "After", "Outside"],
+			correct: 2,
+			topic: "Complex Sentences"
+		},
+
+		// 9. Compound-Complex Sentences (1 question)
+		{
+			question: "How many independent clauses are in: 'While I was reading, the lights went out, and I had to find a flashlight'?",
+			options: ["One", "Two", "Three", "Four"],
+			correct: 1,
+			topic: "Compound-Complex Sentences"
+		},
+
+		// 10. Sentence Variety (1 question)
+		{
+			question: "Which sentence type contains one independent clause and at least one dependent clause?",
+			options: ["Simple", "Compound", "Complex", "Fragment"],
+			correct: 2,
+			topic: "Sentence Variety"
+		},
+
+		// 11. Punctuation in Complex Sentences (2 questions)
+		{
+			question: "Where should the comma go? 'Although it was late we kept studying.'",
+			options: ["After 'Although'", "After 'late'", "After 'we'", "No comma needed"],
+			correct: 1,
+			topic: "Complex Sentence Punctuation"
+		},
+		{
+			question: "Choose the correctly punctuated sentence:",
+			options: ["While it was snowing we stayed inside and drank hot chocolate", "While it was snowing, we stayed inside, and we drank hot chocolate", "While it was snowing we stayed inside, and we drank hot chocolate", "While it was snowing, we stayed inside and drank hot chocolate"],
+			correct: 3,
+			topic: "Complex Sentence Punctuation"
+		},
+
+		// 12. Active vs Passive Voice (2 questions)
+		{
+			question: "Identify which sentence is in active voice:",
+			options: ["The cake was baked by Sarah", "Tom wrote the report", "The windows were cleaned by the janitor", "The answer was found"],
+			correct: 1,
+			topic: "Voice"
+		},
+		{
+			question: "Rewrite in passive voice: 'The chef prepared the dinner.'",
+			options: ["The dinner was prepared", "The dinner was prepared by the chef", "The chef is preparing the dinner", "The dinner prepared the chef"],
+			correct: 1,
+			topic: "Voice"
+		},
+
+		// 13. Subject-Verb Agreement (2 questions)
+		{
+			question: "Choose the correct verb: 'The team _____ winning the game.'",
+			options: ["is", "are", "were", "be"],
+			correct: 0,
+			topic: "Subject-Verb Agreement"
+		},
+		{
+			question: "Which sentence has correct subject-verb agreement?",
+			options: ["Either the teacher or the students has the notes", "The committee are meeting today", "Each of the participants gets a medal", "Everyone have a ticket"],
+			correct: 2,
+			topic: "Subject-Verb Agreement"
+		},
+
+		// 14. Parallel Structure (2 questions)
+		{
+			question: "Which sentence has parallel structure?",
+			options: ["She enjoys reading, to write, and hiking", "She enjoys reading, writing, and hiking", "She enjoys to read, writing, and to hike", "She enjoys reading, writes, and hiking"],
+			correct: 1,
+			topic: "Parallel Structure"
+		},
+		{
+			question: "Fix for parallel structure: 'He likes swimming, to run, and biking.'",
+			options: ["He likes swimming, running, and biking", "He likes to swim, to run, and to bike", "He likes swimming, runs, and biking", "Both A and B"],
+			correct: 3,
+			topic: "Parallel Structure"
+		},
+
+		// 15. Quotation Punctuation (2 questions)
+		{
+			question: "Which is correctly punctuated?",
+			options: ["\"I love reading\" she said", "\"I love reading,\" she said", "\"I love reading.\" she said", "\"I love reading.\" She said"],
+			correct: 3,
+			topic: "Quotation Punctuation"
+		},
+		{
+			question: "Punctuate correctly: 'Are you coming with us' he asked.",
+			options: ["\"Are you coming with us?\" he asked", "\"Are you coming with us\" he asked?", "\"Are you coming with us,\" he asked", "Are you coming with us? he asked"],
+			correct: 0,
+			topic: "Quotation Punctuation"
+		},
+
+		// 16. Apostrophe Usage (2 questions)
+		{
+			question: "Choose the correct possessive form:",
+			options: ["The girls books", "The girls' books", "The girls's books", "The girl's books"],
+			correct: 1,
+			topic: "Apostrophe Usage"
+		},
+		{
+			question: "Choose the correct contraction:",
+			options: ["Its raining", "It's raining", "It is raining", "Both B and C"],
+			correct: 3,
+			topic: "Apostrophe Usage"
+		},
+
+		// 17. Contractions and Common Errors (1 question)
+		{
+			question: "Which sentence is correct?",
+			options: ["Its a good idea to check you're work", "Its a good idea to check your work", "It's a good idea to check your work", "It's a good idea to check you're work"],
+			correct: 2,
+			topic: "Contractions & Common Errors"
+		},
+
+		// 18. Consistent Verb Tense (1 question)
+		{
+			question: "Which sentence maintains consistent verb tense?",
+			options: ["She walked to the park and sits on the bench", "She walked to the park and sat on the bench", "She walks to the park and sat on the bench", "She walk to the park and sat on the bench"],
+			correct: 1,
+			topic: "Verb Tense Consistency"
+		},
+
+		// 19. Sentence Fragments and Run-ons (2 questions)
+		{
+			question: "Which is a sentence fragment?",
+			options: ["She enjoys reading books", "Because she ran to the store", "He jumped over the fence", "The cat sleeps"],
+			correct: 1,
+			topic: "Fragments & Run-ons"
+		},
+		{
+			question: "Fix the run-on: 'He went to the store he bought milk.'",
+			options: ["He went to the store, and he bought milk", "He went to the store he bought milk", "He went, to the store he bought milk", "He went to the store milk"],
+			correct: 0,
+			topic: "Fragments & Run-ons"
+		},
+
+		// 20. Dangling and Misplaced Modifiers (2 questions)
+		{
+			question: "Which sentence has a dangling modifier?",
+			options: ["Running through the park, she felt happy", "Running through the park, the birds chirped loudly", "She saw a dog with a fluffy tail", "The teacher explained the lesson clearly"],
+			correct: 1,
+			topic: "Modifiers"
+		},
+		{
+			question: "Fix: 'Covered in syrup, the waiter served the pancakes.'",
+			options: ["The waiter served the pancakes covered in syrup", "The pancakes covered in syrup were served", "The waiter served covered in syrup the pancakes", "Covered in syrup pancakes the waiter served"],
+			correct: 0,
+			topic: "Modifiers"
+		},
+
+		// 21. Homophones and Confusing Words (2 questions)
+		{
+			question: "Choose the correct word: 'They're going to _____ house over there.'",
+			options: ["their", "there", "they're", "thee"],
+			correct: 0,
+			topic: "Homophones"
+		},
+		{
+			question: "Which sentence uses the correct word?",
+			options: ["The loud music will effect my concentration", "The loud music will affect my concentration", "The movie had a good affect on me", "I accept everyone except John"],
+			correct: 1,
+			topic: "Homophones"
+		},
+
+		// 22. Subjunctive Mood (2 questions)
+		{
+			question: "Choose the correct subjunctive form: 'I wish I _____ taller.'",
+			options: ["was", "were", "be", "am"],
+			correct: 1,
+			topic: "Subjunctive Mood"
+		},
+		{
+			question: "Which uses subjunctive mood correctly?",
+			options: ["If I was president, I'd be fair", "If I were president, I'd be fair", "The teacher demands he does his homework", "She wishes she was a movie star"],
+			correct: 1,
+			topic: "Subjunctive Mood"
+		},
+
+		// 23. Ellipses and Dashes (1 question)
+		{
+			question: "What does an ellipsis (...) show?",
+			options: ["A pause or hesitation", "An interruption", "Quotation marks", "An explanation"],
+			correct: 0,
+			topic: "Ellipses & Dashes"
+		},
+
+		// 24. Colons and Semicolons (2 questions)
+		{
+			question: "Which sentence uses a colon correctly?",
+			options: ["I need: milk, eggs, and bread", "I need three things: milk, eggs, and bread", "I need milk: eggs, and bread", "I need, milk eggs and bread"],
+			correct: 1,
+			topic: "Colons & Semicolons"
+		},
+		{
+			question: "When would you use a semicolon?",
+			options: ["To introduce a list", "To connect two independent clauses", "To show possession", "To indicate a pause"],
+			correct: 1,
+			topic: "Colons & Semicolons"
+		}
+	];
+
+	let currentQuestion = 0;
+	let userAnswers = new Array(questions.length).fill(null);
+	let shuffledQuestions = [];
+	let answerMappings = {};
+	let startTime = 0;
+
+	function shuffleArray(array) {
+		const shuffled = [...array];
+		for (let i = shuffled.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+		}
+		return shuffled;
+	}
+
+	function startQuiz(event) {
+		if (event) event.preventDefault();
+		const title = document.getElementById("quizTitle").value || "Grammar Quiz";
+		document.getElementById("brandTitle").textContent = title;
+		document.getElementById("totalQuestions").textContent = questions.length;
+
+		shuffledQuestions = shuffleArray(questions);
+		answerMappings = {};
+
+		shuffledQuestions.forEach((q, index) => {
+			const optionsWithIndices = q.options.map((option, i) => ({ option, originalIndex: i }));
+			const shuffledOptions = shuffleArray(optionsWithIndices);
+			q.displayOptions = shuffledOptions.map(item => item.option);
+			answerMappings[index] = shuffledOptions.findIndex(item => item.originalIndex === q.correct);
+		});
+
+		userAnswers = new Array(shuffledQuestions.length).fill(null);
+		currentQuestion = 0;
+		startTime = Date.now();
+
+		document.getElementById("startScreen").classList.remove("active");
+		document.getElementById("quizContainer").style.display = "block";
+		document.getElementById("quizControls").classList.add("show");
+		document.getElementById("stickyTimer").classList.add("active");
+
+		showQuestion(0);
+		updateTimer();
+		setInterval(updateTimer, 1000);
+	}
+
+	function updateTimer() {
+		const elapsed = Math.floor((Date.now() - startTime) / 1000);
+		const minutes = Math.floor(elapsed / 60);
+		const seconds = elapsed % 60;
+		document.getElementById("stickyTimerDisplay").textContent =
+			String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+	}
+
+	function showQuestion(index) {
+		const q = shuffledQuestions[index];
+		document.getElementById("questionNum").textContent = index + 1;
+		document.getElementById("topicDisplay").textContent = q.topic;
+		document.getElementById("questionText").textContent = q.question;
+		document.getElementById("progressFill").style.width = ((index + 1) / shuffledQuestions.length * 100) + "%";
+
+		const container = document.getElementById("optionsContainer");
+		container.innerHTML = "";
+
+		q.displayOptions.forEach((option, i) => {
+			const div = document.createElement("div");
+			div.className = "option";
+			if (userAnswers[index] === i) {
+				div.classList.add("selected");
+			}
+			div.textContent = option;
+			div.onclick = () => selectAnswer(i, index);
+			container.appendChild(div);
+		});
+
+		document.getElementById("prevBtn").disabled = index === 0;
+		document.getElementById("nextBtn").textContent = index === shuffledQuestions.length - 1 ? "Submit Quiz" : "Next →";
+	}
+
+	function selectAnswer(optionIndex, questionIndex) {
+		userAnswers[questionIndex] = optionIndex;
+		showQuestion(currentQuestion);
+	}
+
+	function nextQuestion() {
+		if (currentQuestion < shuffledQuestions.length - 1) {
+			currentQuestion++;
+			showQuestion(currentQuestion);
+		} else {
+			submitQuiz();
+		}
+	}
+
+	function previousQuestion() {
+		if (currentQuestion > 0) {
+			currentQuestion--;
+			showQuestion(currentQuestion);
+		}
+	}
+
+	function submitQuiz() {
+		let correct = 0;
+		userAnswers.forEach((answer, i) => {
+			if (answer === answerMappings[i]) {
+				correct++;
+			}
+		});
+
+		const percentage = Math.round((correct / shuffledQuestions.length) * 100);
+		let message = "";
+		if (percentage === 100) message = "Perfect! 🎉 You're a grammar master!";
+		else if (percentage >= 90) message = "Excellent work! 🌟 Outstanding performance!";
+		else if (percentage >= 80) message = "Great job! 👏 Very good understanding!";
+		else if (percentage >= 70) message = "Good effort! 📚 Keep practicing!";
+		else if (percentage >= 60) message = "Nice try! 💪 Review and try again!";
+		else message = "Keep working on it! 📖 Practice makes perfect!";
+
+		document.getElementById("scoreNumber").textContent = `${correct}/${shuffledQuestions.length}`;
+		document.getElementById("scoreMessage").textContent = message;
+
+		const resultsList = document.getElementById("resultsList");
+		resultsList.innerHTML = "";
+
+		userAnswers.forEach((answer, i) => {
+			const q = shuffledQuestions[i];
+			const item = document.createElement("div");
+			const isCorrect = answer === answerMappings[i];
+			item.className = `result-item ${isCorrect ? "correct" : "incorrect"}`;
+
+			item.innerHTML = `
+				<div class="result-question">Q${i + 1}: ${q.question}</div>
+				<div class="result-answer"><strong>Your Answer:</strong> ${answer !== null ? q.displayOptions[answer] : "Not answered"}</div>
+				<div class="result-answer"><strong>Correct Answer:</strong> ${q.displayOptions[answerMappings[i]]}</div>
+				<div class="result-status ${isCorrect ? "correct" : "incorrect"}">
+					${isCorrect ? "✓ Correct" : "✗ Incorrect"} (${q.topic})
+				</div>
+			`;
+			resultsList.appendChild(item);
+		});
+
+		document.getElementById("quizContainer").style.display = "none";
+		document.getElementById("resultsSection").style.display = "block";
+		document.getElementById("quizControls").classList.remove("show");
+		document.getElementById("stickyTimer").classList.remove("active");
+	}
+
+	function restartQuiz() {
+		currentQuestion = 0;
+		userAnswers = new Array(questions.length).fill(null);
+		document.getElementById("startScreen").classList.add("active");
+		document.getElementById("resultsSection").style.display = "none";
+		document.getElementById("quizContainer").style.display = "none";
+		document.getElementById("quizControls").classList.remove("show");
+		document.getElementById("stickyTimer").classList.remove("active");
+	}
+</script>
+</body>
+</html>
