@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VocaBB Quiz Modes</title>
+<style>
+:root{
+	--ink:#0f172a;--muted:#475569;--line:#e2e8f0;
+	--accent-start:#0ea5e9;--accent-end:#0284c7;--ok:#16a34a;--bad:#dc2626;--bg:#ffffff;
+	--label-width:170px;
+	--bg-top:#f8fbff;
+	--bg-bottom:#eef6ff;
+}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;}
+.wrap{max-width:95%;width:100%;margin:28px auto 80px;padding:0 20px;box-sizing:border-box;}
+@media (min-width:768px){.wrap{max-width:90%;}}
+@media (min-width:1200px){.wrap{max-width:85%;}}
+@media (min-width:1600px){.wrap{max-width:1400px;}}
+.brand{position:sticky;top:0;z-index:102;background:linear-gradient(90deg,var(--accent-start) 0%,var(--accent-end) 100%);color:#fff;padding:14px 18px;margin:0 auto 0;max-width:95%;width:100%;border-radius:0;box-shadow:0 2px 8px rgba(2,20,48,0.12);display:flex;align-items:center;justify-content:space-between;gap:12px;box-sizing:border-box;flex-wrap:wrap;}
+@media (min-width:768px){.brand{max-width:90%;}}
+@media (min-width:1200px){.brand{max-width:85%;}}
+@media (min-width:1600px){.brand{max-width:1400px;}}
+.brand h1{margin:0;font-size:20px;letter-spacing:.2px;font-weight:700}
+.brand-left{display:flex;align-items:center;gap:16px;flex:1;flex-wrap:wrap;}
+.brand-timer{font-weight:700;font-size:16px;opacity:0.95;white-space:nowrap;display:none;}
+#stickyTimer.active{display:inline;}
+.brand-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+#testControls{display:none;align-items:center;gap:8px;flex-wrap:wrap;}
+#testControls.show{display:flex!important;}
+#testControls button{background:rgba(255,255,255,0.2);color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;transition:background 0.2s;white-space:nowrap;}
+#testControls button:hover{background:rgba(255,255,255,0.3);}
+.nav-btn{background:rgba(255,255,255,0.2);color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;transition:background 0.2s;white-space:nowrap;text-decoration:none;display:inline-block;}
+.nav-btn:hover{background:rgba(255,255,255,0.3);}
+#testResult{color:#fff;font-weight:700;display:none;font-size:14px;margin-left:12px;}
+#testResult.active{display:inline;}
+.card{background:#ffffff;border:1px solid rgba(2,6,23,0.04);border-radius:14px;box-shadow:0 6px 18px rgba(2,20,48,0.04);margin:18px 0;overflow:hidden}
+.banner{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:#fff;padding:12px 16px;font-weight:700}
+.content{padding:18px}
+.modes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px;}
+.mode-card{background:#f8fbff;border:2px solid var(--accent-start);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.mode-card:hover{background:#eef6ff;transform:translateY(-2px);}
+.mode-card.active{background:linear-gradient(135deg,var(--accent-start) 0%,var(--accent-end) 100%);color:#fff;border-color:var(--accent-end);}
+.mode-card h3{margin:0 0 8px 0;font-size:18px;}
+.mode-card p{margin:0;font-size:14px;opacity:0.85;}
+.quiz-section{display:none;}
+.quiz-section.active{display:block;}
+.grid-3{display:flex;flex-direction:column;gap:0;}
+.header-row{display:grid;grid-template-columns:var(--label-width) 1fr 1fr;gap:10px;padding:10px 0;background:#f8fbff;border-bottom:2px solid var(--accent-start);font-weight:700;color:var(--ink);font-size:14px;}
+.header-row > div{padding:6px 4px;}
+.row{display:grid;grid-template-columns:var(--label-width) 1fr 1fr;align-items:center;gap:10px;min-height:44px;padding:8px 0;}
+.row > div{word-break:break-word;padding:6px 4px;font-weight:600;color:var(--muted);font-size:15px}
+.row:not(:last-child){border-bottom:1px solid rgba(2,6,23,0.03)}
+input.quiz,textarea.sentence{
+width:100%;box-sizing:border-box;border:1px solid rgba(2,6,23,0.06);background:#fbfdff;font:inherit;padding:10px 12px;border-radius:10px;
+box-shadow:0 1px 2px rgba(2,6,23,0.03), inset 0 0 0 1px rgba(2,6,23,0.03);transition:box-shadow .15s,background .15s,transform .06s;min-height:40px;
+}
+input.quiz:focus,textarea.sentence:focus{outline:none;box-shadow:0 0 0 4px rgba(14,165,233,0.12);background:#f0f9ff}
+.hint{color:var(--muted);font-size:14px;margin:6px 0 0;}
+.ok{background:#ecfdf5!important;box-shadow:inset 0 0 0 2px #16a34a!important;color:#065f46;}
+.bad{background:#fef2f2!important;box-shadow:inset 0 0 0 2px #dc2626!important;color:#7f1d1d;}
+.mc-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
+.mc-option{padding:12px;border:2px solid rgba(2,6,23,0.06);border-radius:8px;cursor:pointer;text-align:left;transition:all 0.2s;background:#fbfdff;}
+.mc-option:hover{background:#f0f9ff;border-color:var(--accent-start);}
+.mc-option.correct{background:#ecfdf5;border-color:#16a34a;color:#065f46;}
+.mc-option.wrong{background:#fef2f2;border-color:#dc2626;color:#7f1d1d;}
+.mc-option.disabled{cursor:default;opacity:0.6;}
+.match-container{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;}
+.match-side{display:flex;flex-direction:column;gap:8px;}
+.match-item{padding:12px;border:2px solid rgba(2,6,23,0.06);border-radius:8px;cursor:pointer;background:#fbfdff;transition:all 0.2s;text-align:center;}
+.match-item:hover{background:#f0f9ff;border-color:var(--accent-start);}
+.match-item.selected{background:var(--accent-start);color:#fff;border-color:var(--accent-end);}
+.match-item.matched{background:#ecfdf5;border-color:#16a34a;cursor:default;}
+.match-pair{display:flex;justify-content:space-between;align-items:center;background:#ecfdf5;padding:12px;border-radius:8px;border-left:4px solid #16a34a;margin-top:8px;}
+#introModal{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.45);}
+#introModal > div{background:#fff;border-radius:12px;max-width:720px;padding:28px;box-shadow:0 12px 40px rgba(2,6,23,0.18);}
+#introModal h2{margin-top:0;color:#0f172a;font-size:24px;}
+#introModal p{color:#475569;line-height:1.6;margin-bottom:16px;}
+.modal-section{background:#f8fbff;border-left:4px solid #0ea5e9;padding:12px 16px;margin:16px 0;border-radius:6px;}
+.modal-section h3{margin:0 0 8px 0;color:#0284c7;font-size:16px;}
+.modal-section ul{margin:0;padding-left:20px;color:#475569;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
+#startTestBtn{background:linear-gradient(90deg,#0ea5e9,#0284c7);color:#fff;border:0;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:700;font-size:16px;box-shadow:0 2px 8px rgba(14,165,233,0.3);}
+.hidden{display:none!important;}
+@media (max-width:560px){
+	.header-row{grid-template-columns:1fr;font-size:13px;padding:8px 0;}
+	.row{grid-template-columns:1fr;grid-auto-rows:auto;align-items:start;}
+	.mc-options{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="brand">
+	<div class="brand-left">
+		<h1>VocaBB — Quiz Modes</h1>
+		<span class="brand-timer" id="stickyTimer">Time: <span id="stickyTimerDisplay">00:00</span></span>
+	</div>
+	<div class="brand-right">
+		<div id="testControls">
+			<button id="finishTestBtn">Finish Test</button>
+			<button id="restartTestBtn">Restart Test</button>
+			<div id="testResult"></div>
+		</div>
+		<a class="nav-btn" href="index.html" title="Home">← Home</a>
+		<a class="nav-btn" href="vocabb.html" style="color:#fff;margin-right:8px;font-weight:600">← Main Quiz</a>
+	</div>
+</div>
+
+<div class="wrap">
+<div class="card">
+<div class="banner">Choose Quiz Mode</div>
+<div class="content">
+	<div class="modes-grid">
+		<div class="mode-card active" data-mode="reverse">
+			<h3>🔄 Reverse Quiz</h3>
+			<p>Given the meaning, type the root</p>
+		</div>
+		<div class="mode-card" data-mode="multiple-choice">
+			<h3>✓ Multiple Choice</h3>
+			<p>Click the correct meaning</p>
+		</div>
+		<div class="mode-card" data-mode="matching">
+			<h3>🔗 Matching</h3>
+			<p>Match roots to meanings</p>
+		</div>
+	</div>
+</div>
+</div>
+
+<!-- Reverse Quiz Mode -->
+<div id="reverseQuiz" class="quiz-section active">
+<div class="card">
+<div class="banner">Reverse Quiz — Type the Root</div>
+<div class="content">
+<p class="hint">Given the meaning, type the root. Press Enter to check your answer. Delete to try again.</p>
+<div class="grid-3">
+<div class="header-row">
+<div>Root Meaning</div>
+<div>Type Root</div>
+<div></div>
+</div>
+<div id="reverseGrid"><!-- Injected by JS --></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Multiple Choice Mode -->
+<div id="multipleChoiceQuiz" class="quiz-section">
+<div class="card">
+<div class="banner">Multiple Choice — Select the Meaning</div>
+<div class="content">
+<p class="hint">Click the correct meaning for each root.</p>
+<div id="mcGrid"><!-- Injected by JS --></div>
+</div>
+</div>
+</div>
+
+<!-- Matching Mode -->
+<div id="matchingQuiz" class="quiz-section">
+<div class="card">
+<div class="banner">Matching — Pair Roots with Meanings</div>
+<div class="content">
+<p class="hint">Click a root, then click a meaning to pair them.</p>
+<div id="matchGrid"><!-- Injected by JS --></div>
+</div>
+</div>
+</div>
+
+</div>
+
+<script>
+(function(){
+	try{
+		const raw=localStorage.getItem('vocab.theme');
+		if(!raw) return;
+		const theme=JSON.parse(raw);
+		const root=document.documentElement;
+		Object.keys(theme).forEach(k=>root.style.setProperty(k, theme[k]));
+	}catch(e){console.warn('Failed to apply saved theme',e)}
+})();
+
+function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
+
+const allRoots = [
+	{root:'a, an',meaning:'not without'},
+	{root:'ab',meaning:'from away apart'},
+	{root:'ac, acr',meaning:'sharp sour'},
+	{root:'ad, a',meaning:'to towards'},
+	{root:'ali, altr',meaning:'another'},
+	{root:'am, am',meaning:'love'},
+	{root:'ambi, amphi',meaning:'both'},
+	{root:'ann, enn',meaning:'year'},
+	{root:'ante, anti',meaning:'before'},
+	{root:'ant, anti',meaning:'against opposite'},
+	{root:'arch',meaning:'chief first'},
+	{root:'astr, aster',meaning:'star'},
+	{root:'aud, aus',meaning:'to hear'},
+	{root:'auto',meaning:'self'},
+	{root:'belli, bell',meaning:'war'},
+	{root:'bene, bon',meaning:'good'},
+	{root:'bi',meaning:'two'},
+	{root:'cap, cip',meaning:'head'},
+	{root:'capt, cept',meaning:'take hold'},
+	{root:'cata',meaning:'down'},
+	{root:'caus, caut',meaning:'burn heat'},
+	{root:'ced, cess',meaning:'yield go'},
+	{root:'celer',meaning:'swift'},
+	{root:'centri',meaning:'center'},
+	{root:'chrom',meaning:'color'},
+	{root:'chron',meaning:'time'},
+	{root:'cide, cise',meaning:'cut down kill'},
+	{root:'circum',meaning:'around'},
+	{root:'clin, cliv',meaning:'slope'},
+	{root:'clud, clus, claus',meaning:'shut'},
+	{root:'co, col, com, con',meaning:'with together'},
+	{root:'cogn, gno',meaning:'know'},
+	{root:'contra, contro',meaning:'against'},
+	{root:'cor, cardi',meaning:'heart'},
+	{root:'corp',meaning:'body'},
+	{root:'cosm',meaning:'universe world'},
+	{root:'cred',meaning:'believe'},
+	{root:'culp',meaning:'blame fault'},
+	{root:'curr, curs',meaning:'run'},
+	{root:'de',meaning:'down out apart'},
+	{root:'dia',meaning:'across'},
+	{root:'doc, doct',meaning:'teach'},
+	{root:'dox',meaning:'opinion praise'},
+	{root:'duc, duct',meaning:'lead'},
+	{root:'en, em',meaning:'in into'},
+	{root:'erg',meaning:'work'},
+	{root:'err',meaning:'wander'},
+	{root:'ex, e',meaning:'out'},
+	{root:'fal, fals',meaning:'deceive'},
+	{root:'fed, fid',meaning:'faith trust'},
+	{root:'fer',meaning:'bear carry'},
+	{root:'flu, flux',meaning:'flow'},
+	{root:'fore',meaning:'before'},
+	{root:'fus',meaning:'pour'},
+	{root:'gastr, gastro',meaning:'stomach'},
+	{root:'gen',meaning:'birth race'},
+	{root:'geo',meaning:'earth'},
+	{root:'grad, gress',meaning:'step'},
+	{root:'graph, gram',meaning:'writing'},
+	{root:'grav',meaning:'heavy'},
+	{root:'hemi, demi, semi',meaning:'half'},
+	{root:'hyper',meaning:'too much excess'},
+	{root:'hypo',meaning:'too little under'},
+	{root:'il, ir, ig, im, in',meaning:'not'},
+	{root:'inter',meaning:'between among'},
+	{root:'ject, jet',meaning:'throw'},
+	{root:'jur',meaning:'swear law'},
+	{root:'leg, lec, lex',meaning:'read speak'},
+	{root:'levi',meaning:'light'},
+	{root:'lig, li, ly',meaning:'bind'},
+	{root:'loqu, loc',meaning:'speech thought'},
+	{root:'luc, lum',meaning:'light'},
+	{root:'mag, magn',meaning:'great'},
+	{root:'mal',meaning:'bad'},
+	{root:'man',meaning:'hand'},
+	{root:'medi',meaning:'middle'},
+	{root:'men',meaning:'remember'},
+	{root:'miss, mit',meaning:'send'},
+	{root:'mon',meaning:'to warn'},
+	{root:'mor, mort',meaning:'dead'},
+	{root:'morph',meaning:'form'},
+	{root:'mut',meaning:'change'},
+	{root:'nat, nasc',meaning:'born'},
+	{root:'neo',meaning:'new'},
+	{root:'nov',meaning:'new'},
+	{root:'nox, nic, nec, noc',meaning:'harm'},
+	{root:'nym',meaning:'name'},
+	{root:'omni',meaning:'all every'},
+	{root:'pan',meaning:'all'},
+	{root:'path, pathy',meaning:'feeling suffering'},
+	{root:'pele, puls',meaning:'drive urge'},
+	{root:'pend, pens, pond',meaning:'hang weigh'},
+	{root:'pet',meaning:'seek go towards'},
+	{root:'phil',meaning:'love'},
+	{root:'plac',meaning:'calm please'},
+	{root:'pod, pedi',meaning:'foot'},
+	{root:'port',meaning:'carry'},
+	{root:'pos, pon, pound',meaning:'put place'},
+	{root:'proto',meaning:'first'},
+	{root:'psych',meaning:'mind soul'},
+	{root:'quad',meaning:'four'},
+	{root:'re',meaning:'again'},
+	{root:'retro',meaning:'backward'},
+	{root:'rog, roga',meaning:'ask'},
+	{root:'sacr, sanc, secr',meaning:'sacred'},
+	{root:'se',meaning:'apart away'},
+	{root:'sed, sess, sid',meaning:'sit'},
+	{root:'serv',meaning:'save serve'},
+	{root:'sub',meaning:'under'},
+	{root:'tact, tig, ting, tang, tag',meaning:'touch'},
+	{root:'tele',meaning:'far'},
+	{root:'ten, tin, tain',meaning:'hold'},
+	{root:'tend, tens, tent',meaning:'stretch'},
+	{root:'trans',meaning:'across'},
+	{root:'uni',meaning:'one'},
+	{root:'ver',meaning:'true'},
+	{root:'vert, vers',meaning:'turn'},
+	{root:'vid, vis',meaning:'to see'},
+	{root:'viv, vit',meaning:'life'},
+	{root:'voc, vok',meaning:'call'}
+];
+
+function getRandomRoots(count=30){
+	const shuffled=[...allRoots].sort(()=>Math.random()-0.5);
+	return shuffled.slice(0,count);
+}
+
+function formatTime(ms){
+	const totalSec=Math.floor(ms/1000);
+	const m=String(Math.floor(totalSec/60)).padStart(2,'0');
+	const s=String(totalSec%60).padStart(2,'0');
+	return m+':'+s;
+}
+
+// Mode switching
+document.querySelectorAll('.mode-card').forEach(card=>{
+	card.addEventListener('click',()=>{
+		document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('active'));
+		document.querySelectorAll('.quiz-section').forEach(s=>s.classList.remove('active'));
+		card.classList.add('active');
+		const mode=card.dataset.mode;
+		if(mode==='reverse') document.getElementById('reverseQuiz').classList.add('active');
+		else if(mode==='multiple-choice') document.getElementById('multipleChoiceQuiz').classList.add('active');
+		else if(mode==='matching') document.getElementById('matchingQuiz').classList.add('active');
+	});
+});
+
+let timerInterval=null;
+let startTs=null;
+let currentMode='reverse';
+
+function startTimer(){
+	startTs=Date.now();
+	const stickyTimer=document.getElementById('stickyTimer');
+	if(stickyTimer) stickyTimer.classList.add('active');
+	timerInterval=setInterval(()=>{
+		const timeStr=formatTime(Date.now()-startTs);
+		document.getElementById('stickyTimerDisplay').textContent=timeStr;
+	},1000);
+}
+
+function stopTimer(){
+	if(timerInterval) clearInterval(timerInterval);
+	timerInterval=null;
+}
+
+// REVERSE QUIZ
+function populateReverseQuiz(){
+	const roots=getRandomRoots(30);
+	const grid=document.getElementById('reverseGrid');
+	grid.innerHTML='';
+	roots.forEach(item=>{
+		const row=document.createElement('div');
+		row.className='row';
+		const meaningDiv=document.createElement('div');
+		meaningDiv.textContent=item.meaning;
+		const inputDiv=document.createElement('div');
+		const input=document.createElement('input');
+		input.className='quiz';
+		input.dataset.answers=item.root;
+		input.placeholder='Type root...';
+		inputDiv.appendChild(input);
+		const emptyDiv=document.createElement('div');
+		row.appendChild(meaningDiv);
+		row.appendChild(inputDiv);
+		row.appendChild(emptyDiv);
+		grid.appendChild(row);
+
+		input.addEventListener('keydown',e=>{
+			if(e.key==='Enter'){
+				e.preventDefault();
+				const answers=(input.dataset.answers||'').split(',').map(norm).filter(Boolean);
+				const val=norm(input.value);
+				if(answers.length&&answers.includes(val)){
+					input.classList.remove('bad');
+					input.classList.add('ok');
+				}else{
+					input.classList.remove('ok');
+					input.classList.add('bad');
+				}
+			}
+		});
+		input.addEventListener('input',()=>{if(!input.value) input.classList.remove('ok','bad');});
+	});
+}
+
+// MULTIPLE CHOICE
+function populateMultipleChoice(){
+	const roots=getRandomRoots(10);
+	const allMeanings=allRoots.map(r=>r.meaning);
+	const grid=document.getElementById('mcGrid');
+	grid.innerHTML='';
+
+	roots.forEach(item=>{
+		const row=document.createElement('div');
+		row.className='row';
+		const rootDiv=document.createElement('div');
+		rootDiv.textContent=item.root;
+		rootDiv.style.fontWeight='700';
+		row.appendChild(rootDiv);
+
+		const shuffled=[...allMeanings].sort(()=>Math.random()-0.5).slice(0,4);
+		if(!shuffled.includes(item.meaning)) shuffled[Math.floor(Math.random()*4)]=item.meaning;
+		shuffled.sort(()=>Math.random()-0.5);
+
+		const optionsDiv=document.createElement('div');
+		optionsDiv.className='mc-options';
+		shuffled.forEach(meaning=>{
+			const opt=document.createElement('div');
+			opt.className='mc-option';
+			opt.textContent=meaning;
+			opt.addEventListener('click',()=>{
+				if(norm(meaning)===norm(item.meaning)){
+					opt.classList.add('correct');
+				}else{
+					opt.classList.add('wrong');
+				}
+				optionsDiv.querySelectorAll('.mc-option').forEach(o=>{o.style.pointerEvents='none';o.classList.add('disabled');});
+			});
+			optionsDiv.appendChild(opt);
+		});
+		row.appendChild(optionsDiv);
+		grid.appendChild(row);
+	});
+}
+
+// MATCHING
+let matchSelected=null;
+function populateMatching(){
+	const roots=getRandomRoots(8);
+	const grid=document.getElementById('matchGrid');
+	grid.innerHTML='<div class="match-container"><div class="match-side" id="matchRoots"></div><div class="match-side" id="matchMeanings"></div></div><div id="matchedPairs" style="margin-top:20px;"></div>';
+
+	const meanings=[...roots].sort(()=>Math.random()-0.5);
+	const rootsDiv=document.getElementById('matchRoots');
+	const meaningsDiv=document.getElementById('matchMeanings');
+
+	roots.forEach((item,idx)=>{
+		const rootItem=document.createElement('div');
+		rootItem.className='match-item';
+		rootItem.textContent=item.root;
+		rootItem.dataset.rootIdx=idx;
+		rootItem.addEventListener('click',()=>{
+			if(rootItem.classList.contains('matched')) return;
+			document.querySelectorAll('#matchRoots .match-item').forEach(i=>i.classList.remove('selected'));
+			rootItem.classList.add('selected');
+			matchSelected={type:'root',idx:idx,item:item};
+		});
+		rootsDiv.appendChild(rootItem);
+	});
+
+	meanings.forEach((item,idx)=>{
+		const meanItem=document.createElement('div');
+		meanItem.className='match-item';
+		meanItem.textContent=item.meaning;
+		meanItem.dataset.meaningIdx=idx;
+		meanItem.addEventListener('click',()=>{
+			if(!matchSelected||matchSelected.type!=='root') return;
+			if(norm(item.meaning)===norm(matchSelected.item.meaning)){
+				document.getElementById('matchedPairs').innerHTML+=`<div class="match-pair"><div>${matchSelected.item.root}</div><div>${item.meaning}</div></div>`;
+				document.querySelector(`[data-rootIdx="${matchSelected.idx}"]`).classList.add('matched');
+				meanItem.classList.add('matched');
+				matchSelected=null;
+				document.querySelectorAll('#matchRoots .match-item').forEach(i=>i.classList.remove('selected'));
+			}else{
+				meanItem.style.background='#fef2f2';
+				setTimeout(()=>meanItem.style.background='',200);
+			}
+		});
+		meaningsDiv.appendChild(meanItem);
+	});
+}
+
+function gradeReverse(){
+	const inputs=document.querySelectorAll('#reverseGrid input.quiz');
+	let total=0,correct=0;
+	inputs.forEach(input=>{
+		const answers=(input.dataset.answers||'').split(',').map(norm).filter(Boolean);
+		const val=norm(input.value);
+		total++;
+		if(answers.length&&answers.includes(val)) correct++;
+	});
+	return{total,correct};
+}
+
+function gradeMultipleChoice(){
+	const options=document.querySelectorAll('#mcGrid .mc-option.correct');
+	return{total:10,correct:options.length};
+}
+
+function gradeMatching(){
+	const pairs=document.querySelectorAll('#matchedPairs .match-pair');
+	return{total:8,correct:pairs.length};
+}
+
+// Init
+populateReverseQuiz();
+populateMultipleChoice();
+populateMatching();
+
+document.getElementById('finishTestBtn').addEventListener('click',()=>{
+	stopTimer();
+	let result;
+	if(document.getElementById('reverseQuiz').classList.contains('active')) result=gradeReverse();
+	else if(document.getElementById('multipleChoiceQuiz').classList.contains('active')) result=gradeMultipleChoice();
+	else result=gradeMatching();
+
+	const pct=result.total?Math.round((result.correct/result.total)*100):0;
+	const elapsedMs=Date.now()-startTs;
+	document.getElementById('testResult').textContent=`Score: ${result.correct}/${result.total} (${pct}%) — Time: ${formatTime(elapsedMs)}`;
+	document.getElementById('testResult').classList.add('active');
+});
+
+document.getElementById('restartTestBtn').addEventListener('click',()=>{
+	if(confirm('Restart the test?')){
+		populateReverseQuiz();
+		populateMultipleChoice();
+		populateMatching();
+		document.getElementById('testResult').classList.remove('active');
+		document.getElementById('stickyTimerDisplay').textContent='00:00';
+		startTs=Date.now();
+		startTimer();
+	}
+});
+
+// Start
+const controls=document.getElementById('testControls');
+if(controls) controls.classList.add('show');
+startTimer();
+
+})();
+</script>
+</body>
+</html>

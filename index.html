@@ -19,6 +19,9 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg-top) 0%,
 .header h1{font-size:3em;margin:0 0 12px 0;color:var(--ink);font-weight:700;letter-spacing:-1px;}
 .header p{color:var(--muted);font-size:1.2em;margin:0;line-height:1.6;}
 .buttons-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:40px;}
+@media (max-width:1024px){
+	.buttons-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+}
 @media (max-width:768px){
 	.buttons-grid{grid-template-columns:1fr;gap:24px;}
 	.header h1{font-size:2em;}
@@ -61,6 +64,14 @@ html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg-top) 0%,
 			<h2 class="card-title">GrammeRR</h2>
 			<p class="card-description">Test your grammar knowledge with 50 comprehensive questions covering parts of speech, punctuation, and sentence structure.</p>
 			<span class="card-badge">50 Questions</span>
+		</a>
+
+		<!-- Quiz Modes Button (Blue) -->
+		<a href="modes.html" class="button-card blue-card">
+			<span class="card-icon">🎯</span>
+			<h2 class="card-title">Quiz Modes</h2>
+			<p class="card-description">Practice roots with different quiz formats: Reverse Quiz, Multiple Choice, and Matching games.</p>
+			<span class="card-badge">3 Modes</span>
 		</a>
 	</div>
 
