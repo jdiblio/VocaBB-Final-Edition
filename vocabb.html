@@ -575,13 +575,16 @@ function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
 				el.classList.remove('ok','bad','answer-shown','empty');
 				el.disabled = false;
 				el.value = '';
-				// Unwrap from input-wrapper if needed
+				// Unwrap from input-wrapper if needed and remove correct-answer-display spans
 				if(el.parentElement.classList.contains('input-wrapper')){
 					const wrapper = el.parentElement;
 					const row = wrapper.parentElement;
 					while(wrapper.firstChild) row.insertBefore(wrapper.firstChild, wrapper);
 					wrapper.remove();
 				}
+				// Remove any stray correct-answer-display spans
+				const span = el.parentElement.querySelector('.correct-answer-display');
+				if(span) span.remove();
 			});
 			// start timer
 			startTimer();
@@ -680,13 +683,16 @@ function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
 				el.classList.remove('ok','bad','answer-shown','empty');
 				el.value='';
 				el.disabled = false;
-				// Unwrap from input-wrapper if needed
+				// Unwrap from input-wrapper if needed and remove correct-answer-display spans
 				if(el.parentElement.classList.contains('input-wrapper')){
 					const wrapper = el.parentElement;
 					const row = wrapper.parentElement;
 					while(wrapper.firstChild) row.insertBefore(wrapper.firstChild, wrapper);
 					wrapper.remove();
 				}
+				// Remove any stray correct-answer-display spans
+				const span = el.parentElement.querySelector('.correct-answer-display');
+				if(span) span.remove();
 			});
 			startTs = Date.now();
 			// reset timer display and start
