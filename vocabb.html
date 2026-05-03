@@ -327,6 +327,11 @@ function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
 						<li>Track your progress over multiple attempts with the progress chart</li>
 					</ul>
 				</div>
+				<div class="modal-section">
+					<h3>Time Mode:</h3>
+					<label style="display:block;margin:8px 0;"><input type="radio" name="timeMode" value="timed" checked> Timed (track time)</label>
+					<label style="display:block;margin:8px 0;"><input type="radio" name="timeMode" value="untimed"> Untimed (no clock)</label>
+				</div>
 				<div class="modal-actions">
 					<button id="startTestBtn">Start Test</button>
 				</div>
@@ -338,6 +343,7 @@ function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
 	let timerInterval = null;
 	let startTs = null;
 	let testFinished = false;
+	let timedMode = true;
 
 	// All vocabulary words with their meanings
 	const allWords = [
@@ -497,6 +503,7 @@ function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
 
 	function startTimer(){
 		startTs = Date.now();
+		if(!timedMode) return;
 		const timerEl = document.getElementById('testTimer');
 		const stickyTimerEl = document.getElementById('stickyTimerDisplay');
 		const stickyTimer = document.getElementById('stickyTimer');
@@ -530,6 +537,23 @@ function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
 				} else {
 					el.classList.remove('ok');
 					el.classList.add('bad');
+					// Track weak roots for quiz inputs
+					if(el.classList.contains('quiz')){
+						const row = el.closest('.row');
+						if(row){
+							const rootDiv = row.querySelector('div:first-child');
+							if(rootDiv){
+								const root = rootDiv.textContent.trim();
+								try{
+									const key = 'vocab.weakRoots';
+									const raw = localStorage.getItem(key);
+									const weakRoots = raw ? JSON.parse(raw) : {};
+									weakRoots[root] = (weakRoots[root] || 0) + 1;
+									localStorage.setItem(key, JSON.stringify(weakRoots));
+								}catch(e){console.warn('Failed to track weak root',e)}
+							}
+						}
+					}
 				}
 
 				// Show correct answers if requested
@@ -561,6 +585,9 @@ function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
 		function startTestFlow(event){
 			if (event) event.preventDefault();
 			testFinished = false;
+			// Read time mode from radio buttons
+			const timeModeRadio = document.querySelector('input[name="timeMode"]:checked');
+			timedMode = timeModeRadio ? timeModeRadio.value === 'timed' : true;
 			// Remove ALL correct-answer-display spans first
 			document.querySelectorAll('.correct-answer-display').forEach(span => span.remove());
 			// Unwrap all input-wrappers
@@ -643,19 +670,51 @@ function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
 		document.getElementById('finishTestBtn').addEventListener('click', ()=>{
 			testFinished = true;
 			stopTimer();
-			const elapsedMs = Date.now()-startTs;
+			const elapsedMs = timedMode ? Date.now()-startTs : null;
 			const {total,correct} = gradeAll(true);
 			const pct = total?Math.round((correct/total)*100):0;
 			const resultEl = document.getElementById('testResult');
 			resultEl.classList.add('active');
-			resultEl.textContent = `Score: ${correct}/${total} (${pct}%) — Time: ${formatTime(elapsedMs)}`;
+			const timeStr = timedMode ? ` — Time: ${formatTime(elapsedMs)}` : '';
+			resultEl.textContent = `Score: ${correct}/${total} (${pct}%)${timeStr}`;
 			// record attempt
 			try{ recordAttempt(correct,total,elapsedMs); }catch(e){}
 			// Check sentences for word usage
 			gradeSentences();
+			// Show weak roots
+			showWeakRoots();
 			// scroll to results
 			resultEl.scrollIntoView({behavior:'smooth',block:'center'});
 		});
+
+		// Display weak roots after test
+		function showWeakRoots(){
+			try{
+				const raw = localStorage.getItem('vocab.weakRoots');
+				const weakRoots = raw ? JSON.parse(raw) : {};
+				const entries = Object.entries(weakRoots)
+					.sort((a,b) => b[1] - a[1])
+					.slice(0, 10);
+
+				if(entries.length === 0) return;
+
+				let modal = document.getElementById('weakRootsModal');
+				if(!modal){
+					modal = document.createElement('div');
+					modal.id = 'weakRootsModal';
+					modal.className = 'card';
+					modal.style.marginTop = '20px';
+					document.querySelector('.wrap').insertBefore(modal, document.querySelector('.wrap').children[1]);
+				}
+
+				let html = '<div class="banner">Your Weak Roots (This Session)</div><div class="content"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">';
+				entries.forEach(([root, count])=>{
+					html += `<div style="background:#fef2f2;border:2px solid #dc2626;border-radius:8px;padding:10px;text-align:center;"><div style="font-weight:700;color:#7f1d1d;font-size:18px;">${root}</div><div style="color:#9f1239;font-size:12px;">${count} wrong</div></div>`;
+				});
+				html += '</div></div>';
+				modal.innerHTML = html;
+			}catch(e){console.warn('Failed to show weak roots',e)}
+		}
 
 		// Record attempt to localStorage
 		function recordAttempt(correct,total,elapsedMs){
